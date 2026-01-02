@@ -1,4 +1,4 @@
-# Smart Customer Feedback Intelligence Platform (SCFIP) - UI
+# Smart Customer Feedback Intelligence Platform (SCFIP) - UI.
 
 [![Streamlit](https://img.shields.io/badge/Streamlit-FF4B4B?style=for-the-badge&logo=Streamlit&logoColor=white)](https://streamlit.io/)
 [![Python](https://img.shields.io/badge/Python-3.8+-blue?style=for-the-badge&logo=python&logoColor=white)](https://www.python.org/)
