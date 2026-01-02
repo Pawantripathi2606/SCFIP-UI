@@ -7,6 +7,7 @@ from wordcloud import WordCloud
 import matplotlib.pyplot as plt
 from datetime import datetime
 import io
+import os
 
 # Page configuration
 st.set_page_config(
@@ -16,8 +17,8 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-# API Base URL
-API_BASE_URL = "http://localhost:8000/api"
+# API Base URL - supports Streamlit Cloud secrets, environment variable, or localhost
+API_BASE_URL = st.secrets.get("API_BASE_URL", os.getenv("API_BASE_URL", "http://localhost:8000/api"))
 
 # Custom CSS for better styling
 st.markdown("""
@@ -127,17 +128,18 @@ def upload_csv_feedback(df):
     except Exception as e:
         return False, {"message": str(e)}
 
+
 # Main App
 def main():
     # Header
-    st.markdown('<h1 class="main-header">📊 Smart Customer Feedback Intelligence Platform</h1>', 
+    st.markdown('<h1 class="main-header">Smart Customer Feedback Intelligence Platform</h1>', 
                 unsafe_allow_html=True)
     
     # Check API status
     api_status = check_api_health()
     
     if not api_status:
-        st.error("⚠️ **API Server is not running!**")
+        st.error("**API Server is not running!**")
         st.info("Please start the FastAPI server first:")
         st.code("python backend/main.py", language="bash")
         st.stop()
@@ -149,14 +151,14 @@ def main():
         
         page = st.radio(
             "Select Page",
-            ["📈 Dashboard", "🔍 Deep Dive", "📝 Add Feedback", "💬 Live Analyzer", "⚙️ Settings"],
+            ["Dashboard", "Deep Dive", "Add Feedback", "Live Analyzer", "Settings"],
             label_visibility="collapsed"
         )
         
         st.divider()
         
         st.subheader("Quick Actions")
-        if st.button("🔄 Analyze All Feedback", use_container_width=True):
+        if st.button("Analyze All Feedback", use_container_width=True):
             with st.spinner("Analyzing all feedback..."):
                 success, result = analyze_all_feedback()
                 if success:
@@ -168,20 +170,20 @@ def main():
         st.caption("Powered by AI & Deep Learning")
     
     # Page routing
-    if page == "📈 Dashboard":
+    if page == "Dashboard":
         show_dashboard()
-    elif page == "🔍 Deep Dive":
+    elif page == "Deep Dive":
         show_deep_dive()
-    elif page == "📝 Add Feedback":
+    elif page == "Add Feedback":
         show_add_feedback()
-    elif page == "💬 Live Analyzer":
+    elif page == "Live Analyzer":
         show_live_analyzer()
-    elif page == "⚙️ Settings":
+    elif page == "Settings":
         show_settings()
 
 def show_dashboard():
     """Main dashboard with overview metrics and visualizations"""
-    st.header("📈 Analytics Dashboard")
+    st.header("Analytics Dashboard")
     
     # Fetch data
     analytics = get_analytics_summary()
@@ -195,7 +197,7 @@ def show_dashboard():
     
     with col1:
         st.metric(
-            label="📊 Total Feedback",
+            label="Total Feedback",
             value=analytics['total_feedback'],
             delta=None
         )
@@ -203,14 +205,14 @@ def show_dashboard():
     with col2:
         avg_score = analytics['avg_sentiment_score']
         st.metric(
-            label="😊 Avg Sentiment Score",
+            label="Avg Sentiment Score",
             value=f"{avg_score:.2f}",
             delta=f"{(avg_score - 0.5) * 100:.1f}%" if avg_score else None
         )
     
     with col3:
         st.metric(
-            label="🎯 Top Intent",
+            label="Top Intent",
             value=analytics['top_intent'],
             delta=None
         )
@@ -219,7 +221,7 @@ def show_dashboard():
         sentiment_dist = analytics.get('sentiment_distribution', {})
         negative_count = sentiment_dist.get('Negative', 0)
         st.metric(
-            label="⚠️ Negative Feedback",
+            label="Negative Feedback",
             value=negative_count,
             delta=f"-{negative_count}" if negative_count > 0 else "0",
             delta_color="inverse"
@@ -304,7 +306,7 @@ def show_dashboard():
     
     # Recent Feedback Table
     st.divider()
-    st.subheader("📋 Recent Feedback")
+    st.subheader("Recent Feedback")
     
     recent_feedback = get_all_feedback(limit=10)
     
@@ -325,7 +327,7 @@ def show_dashboard():
 
 def show_deep_dive():
     """Deep dive analysis with word clouds and detailed filtering"""
-    st.header("🔍 Deep Dive Analysis")
+    st.header("Deep Dive Analysis")
     
     # Filters
     col1, col2, col3 = st.columns(3)
@@ -360,7 +362,7 @@ def show_deep_dive():
     st.success(f"Found {len(df)} feedback entries")
     
     # Word Cloud
-    st.subheader("☁️ Word Cloud")
+    st.subheader("Word Cloud")
     
     if 'text' in df.columns and len(df) > 0:
         all_text = ' '.join(df['text'].astype(str).tolist())
@@ -382,7 +384,7 @@ def show_deep_dive():
     
     # Sentiment over time
     if 'date' in df.columns and 'sentiment' in df.columns:
-        st.subheader("📅 Sentiment Trends Over Time")
+        st.subheader("Sentiment Trends Over Time")
         
         # Group by date and sentiment
         trend_df = df.groupby(['date', 'sentiment']).size().reset_index(name='count')
@@ -409,10 +411,10 @@ def show_deep_dive():
     st.divider()
     
     # Detailed Table
-    st.subheader("📊 Detailed Feedback Table")
+    st.subheader("Detailed Feedback Table")
     
     # Add search
-    search_term = st.text_input("🔎 Search in feedback text")
+    search_term = st.text_input("Search in feedback text")
     
     if search_term:
         df = df[df['text'].str.contains(search_term, case=False, na=False)]
@@ -422,7 +424,7 @@ def show_deep_dive():
     # Download button
     csv = df.to_csv(index=False)
     st.download_button(
-        label="📥 Download as CSV",
+        label="Download as CSV",
         data=csv,
         file_name=f"feedback_export_{datetime.now().strftime('%Y%m%d_%H%M%S')}.csv",
         mime="text/csv"
@@ -430,9 +432,9 @@ def show_deep_dive():
 
 def show_add_feedback():
     """Page for adding new feedback"""
-    st.header("📝 Add Customer Feedback")
+    st.header("Add Customer Feedback")
     
-    tab1, tab2 = st.tabs(["✍️ Manual Entry", "📤 CSV Upload"])
+    tab1, tab2 = st.tabs(["Manual Entry", "CSV Upload"])
     
     with tab1:
         st.subheader("Add Single Feedback")
@@ -453,7 +455,7 @@ def show_add_feedback():
                 height=150
             )
             
-            submitted = st.form_submit_button("➕ Add Feedback", use_container_width=True)
+            submitted = st.form_submit_button("Add Feedback", use_container_width=True)
             
             if submitted:
                 if not feedback_id or not text:
@@ -469,14 +471,14 @@ def show_add_feedback():
                     success, result = add_feedback(feedback_data)
                     
                     if success:
-                        st.success(f"✅ {result.get('message', 'Feedback added successfully!')}")
+                        st.success(f"{result.get('message', 'Feedback added successfully!')}")
                     else:
-                        st.error(f"❌ {result.get('detail', 'Error adding feedback')}")
+                        st.error(f"{result.get('detail', 'Error adding feedback')}")
     
     with tab2:
         st.subheader("Upload CSV File")
         
-        st.info("📋 CSV should have columns: feedback_id, text, source, date")
+        st.info("CSV should have columns: feedback_id, text, source, date")
         
         # Show example
         with st.expander("View CSV Format Example"):
@@ -507,9 +509,9 @@ def show_add_feedback():
                         missing_cols.append(req_col)
                 
                 if missing_cols:
-                    st.error(f"❌ Missing required columns: {', '.join(missing_cols)}")
+                    st.error(f"Missing required columns: {', '.join(missing_cols)}")
                     st.info(f"Your CSV has columns: {', '.join(df.columns.tolist())}")
-                    st.warning("💡 Make sure your CSV has proper column headers separated by commas")
+                    st.warning("Make sure your CSV has proper column headers separated by commas")
                 else:
                     # Rename columns to match expected format (case-insensitive)
                     column_mapping = {}
@@ -523,7 +525,7 @@ def show_add_feedback():
                     st.write("Preview:")
                     st.dataframe(df.head(), use_container_width=True)
                     
-                    if st.button("📤 Upload Feedback", use_container_width=True):
+                    if st.button("Upload Feedback", use_container_width=True):
                         with st.spinner("Uploading feedback..."):
                             # Convert DataFrame to list of dicts with proper formatting
                             feedbacks = []
@@ -545,30 +547,30 @@ def show_add_feedback():
                                 
                                 if response.status_code == 200:
                                     result = response.json()
-                                    st.success(f"✅ {result.get('message', 'Upload successful!')}")
+                                    st.success(f"{result.get('message', 'Upload successful!')}")
                                     st.balloons()
                                 else:
                                     error_detail = response.json().get('detail', 'Unknown error')
-                                    st.error(f"❌ Upload failed: {error_detail}")
+                                    st.error(f"Upload failed: {error_detail}")
                                     st.error(f"Status code: {response.status_code}")
                             except requests.exceptions.Timeout:
-                                st.error("❌ Upload timed out. The file might be too large or the server is slow.")
+                                st.error("Upload timed out. The file might be too large or the server is slow.")
                             except requests.exceptions.ConnectionError:
-                                st.error("❌ Cannot connect to API. Make sure the backend is running.")
+                                st.error("Cannot connect to API. Make sure the backend is running.")
                             except Exception as e:
-                                st.error(f"❌ Upload failed: {str(e)}")
+                                st.error(f"Upload failed: {str(e)}")
             
             except pd.errors.EmptyDataError:
-                st.error("❌ The CSV file is empty")
+                st.error("The CSV file is empty")
             except pd.errors.ParserError as e:
-                st.error(f"❌ Error parsing CSV: {str(e)}")
-                st.info("💡 Make sure your CSV is properly formatted with commas separating columns")
+                st.error(f"Error parsing CSV: {str(e)}")
+                st.info("Make sure your CSV is properly formatted with commas separating columns")
             except Exception as e:
-                st.error(f"❌ Error reading CSV: {str(e)}")
+                st.error(f"Error reading CSV: {str(e)}")
 
 def show_live_analyzer():
     """Live text analysis tool"""
-    st.header("💬 Live Feedback Analyzer")
+    st.header("Live Feedback Analyzer")
     
     st.write("Analyze any text in real-time using our AI models")
     
@@ -578,7 +580,7 @@ def show_live_analyzer():
         height=150
     )
     
-    if st.button("🔍 Analyze", use_container_width=True, type="primary"):
+    if st.button("Analyze", use_container_width=True, type="primary"):
         if not text_input:
             st.warning("Please enter some text to analyze")
         else:
@@ -591,7 +593,7 @@ def show_live_analyzer():
                     col1, col2 = st.columns(2)
                     
                     with col1:
-                        st.subheader("😊 Sentiment Analysis")
+                        st.subheader("Sentiment Analysis")
                         sentiment = result['sentiment']
                         score = result['sentiment_score']
                         
@@ -607,7 +609,7 @@ def show_live_analyzer():
                         st.caption(f"Confidence: {score:.2%}")
                     
                     with col2:
-                        st.subheader("🎯 Intent Classification")
+                        st.subheader("Intent Classification")
                         intent = result['intent']
                         intent_score = result['intent_score']
                         
@@ -624,13 +626,13 @@ def show_live_analyzer():
 
 def show_settings():
     """Settings and system information"""
-    st.header("⚙️ Settings & Information")
+    st.header("Settings & Information")
     
     st.subheader("System Status")
     
     # API Health
     api_healthy = check_api_health()
-    st.metric("API Status", "🟢 Online" if api_healthy else "🔴 Offline")
+    st.metric("API Status", "Online" if api_healthy else "Offline")
     
     # Database info
     analytics = get_analytics_summary()
@@ -644,11 +646,11 @@ def show_settings():
     **Smart Customer Feedback Intelligence Platform (SCFIP)**
     
     An end-to-end AI-powered system for analyzing customer feedback using:
-    - 🧠 **NLP**: spaCy, NLTK for text preprocessing
-    - 🤖 **Deep Learning**: Bi-LSTM for sentiment, LSTM for intent classification
-    - 🚀 **Backend**: FastAPI with RESTful endpoints
-    - 📊 **Visualization**: Streamlit with Plotly charts
-    - 💾 **Database**: SQLite for data persistence
+    - **NLP**: spaCy, NLTK for text preprocessing
+    - **Deep Learning**: Bi-LSTM for sentiment, LSTM for intent classification
+    - **Backend**: FastAPI with RESTful endpoints
+    - **Visualization**: Streamlit with Plotly charts
+    - **Database**: SQLite for data persistence
     
     **Features:**
     - Real-time sentiment analysis (Positive/Neutral/Negative)
@@ -663,7 +665,7 @@ def show_settings():
     st.subheader("API Endpoints")
     st.code("http://localhost:8000/docs", language="text")
     
-    if st.button("📖 Open API Documentation"):
+    if st.button("Open API Documentation"):
         st.write("[Open Swagger UI](http://localhost:8000/docs)")
 
 if __name__ == "__main__":

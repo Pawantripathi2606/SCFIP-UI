@@ -1,48 +1,65 @@
-# Byte-compiled / optimized / DLL files
+# Python
 __pycache__/
 *.py[cod]
 *$py.class
-
-# Virtual Environment
-venv/
+*.so
+.Python
 env/
+venv/
 ENV/
-.venv/
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
 
-# Database
-*.db
-*.sqlite
-*.sqlite3
+# Streamlit
+.streamlit/secrets.toml
 
-# Model files
-ml/models/*.h5
-ml/models/*.pkl
-ml/models/*.json
-
-# IDE
+# IDEs
 .vscode/
 .idea/
 *.swp
 *.swo
+*~
 
 # OS
 .DS_Store
 Thumbs.db
 
+# Environment
+.env
+.env.local
+
 # Logs
 *.log
 
-# Distribution / packaging
-build/
-dist/
-*.egg-info/
+# Data files (if any local data)
+*.csv
+*.xlsx
+*.db
+*.sqlite
 
 # Jupyter Notebook
 .ipynb_checkpoints
 
-# pytest
-.pytest_cache/
-
-# Coverage
-.coverage
-htmlcov/
+# Backend files (not needed in UI repo)
+backend/
+ml/
+data/
+*.h5
+*.pkl
+*.json
+build.sh
+Procfile
+render.yaml
