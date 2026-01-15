@@ -63,7 +63,7 @@ source venv/bin/activate
 pip install -r requirements.txt
 \`\`\`
 
-### 4. Configure API Connection
+### 4. Configure API Connection.
 
 Create `.streamlit/secrets.toml` from the example:
 
